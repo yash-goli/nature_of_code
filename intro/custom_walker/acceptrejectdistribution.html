@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Custom Walker| Custom Distrubution</title>
+    <style type="text/css">
+        html,body{
+            height: 100%;
+        }
+        body{
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script type="text/javascript">
+    window.requestAnimFrame = (function(){
+        return  window.requestAnimationFrame       ||
+                window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame    ||
+                function( callback ){
+                    window.setTimeout(callback, 1000 / 60);
+                };
+    })();
+    ;(function(){
+        'use strict';
+        var canvas = document.getElementById("canvas");
+        canvas.setAttribute('width', window.innerWidth);
+        canvas.setAttribute('height', window.innerHeight);
+        var ctx = canvas.getContext("2d");
+
+        function background() {
+            if (arguments.length === 1) {
+                if (arguments[0][0] === "#") {
+                    canvas.style.backgroundColor = arguments[0];
+                } else {
+                    canvas.style.backgroundColor = '#' + arguments[0];
+                }
+            } else {
+                if (arguments[3]) {
+                    canvas.style.backgroundColor = 'rgba(' + arguments[0] + ', ' + arguments[1] + ', ' + arguments[2] + ', ' + arguments[3] + ')';
+                } else {
+                    canvas.style.backgroundColor = 'rgb(' + arguments[0] + ', ' + arguments[1] + ', ' + arguments[2] +')';
+                }
+            }
+        }
+
+        function noStroke() {
+            ctx.lineWidth = 0;
+        }
+
+        function stroke(w, c) {
+            ctx.lineWidth = w;
+            ctx.strokeStyle = c;
+            ctx.stroke();
+        }
+
+        function line () {
+            ctx.beginPath();
+            ctx.moveTo(arguments[0], arguments[1]);
+            ctx.lineTo(arguments[2], arguments[3]);
+            ctx.stroke();
+        }
+
+        function fill() {
+            if (arguments.length === 1) {
+                ctx.fillStyle = arguments[0][0] === '#' ? arguments[0] : '#' + arguments[0];
+            } else if (arguments[3]) {
+                ctx.fillStyle = 'rgba(' + arguments[0] + ', ' + arguments[1] + ', ' + arguments[2] + ', ' + arguments[3] + ')';
+            } else {
+                ctx.fillStyle = 'rgb(' + arguments[0] + ', ' + arguments[1] + ', ' + arguments[2] +')';
+            }
+            ctx.fill();
+        }
+ 
+        function circle (x, y, r) {
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, 2 * Math.PI, false);
+        }
+
+        function random () {
+            if (arguments[1]){
+                return Math.random() * (arguments[1] - arguments[0]) + arguments[0]
+            } else {
+                return Math.random() * (arguments[0])
+            }
+        }
+
+        function floor (r) {
+            return Math.floor(r);
+        }
+
+        var vals = [];  // Array to count how often a random # is picked
+        var norms = []; // Normalized version of above
+
+        var width = window.innerWidth;
+        var height = window.innerHeight;
+
+        function setup() {
+            vals = new Array(width);
+            norms = new Array(width);
+        }
+
+        function draw() {
+            background('fff');
+
+            // Pick a random number between 0 and 1 based on custom probability function
+            var n = acceptreject();
+
+            // What spot in the array did we pick
+            var index = parseInt(n*width);
+            vals[index]++;
+            stroke(1,'000');
+
+            var normalization = false;
+            var maxy = 0.0;
+
+            // Draw graph based on values in norms array
+            // If a value is greater than the height, set normalization to true
+            for (var x = 0; x < vals.length; x++) {
+                line(x, height, x, height-norms[x]);
+                if (vals[x] > height) {
+                    normalization = true;
+                }
+                if (vals[x] > maxy) {
+                    maxy = vals[x];
+                }
+            }
+
+            // If normalization is true then normalize to height
+            // Otherwise, just copy the info
+            for (var x = 0; x < vals.length; x++) {
+                if (normalization) {
+                    norms[x] = (vals[x] / maxy) * (height);
+                }
+                else {
+                    norms[x] = vals[x];
+                }
+            }
+        }
+
+        // An algorithm for picking a random number based on monte carlo method
+        // Here probability is determined by formula y = x
+        function acceptreject() {
+            // Have we found one yet
+            var foundone = false;
+            var hack = 0;  // let's count just so we don't get stuck in an infinite loop by accident
+            while (!foundone && hack < 10000) {
+                // Pick two random numbers
+                var r1 = random(1);
+                var r2 = random(1);
+                var y = r1*r1;  // y = x*x (change for different results)
+                // If r2 is valid, we'll use this one
+                if (r2 < y) {
+                    foundone = true;
+                    return r1;
+                }
+                hack++;
+            }
+            // Hack in case we run into a problem (need to improve this)
+            return 0;
+        }
+        // function animate () {
+        //     requestAnimFrame(animate);
+        //     draw();
+        // }
+        // animate();
+    }());
+    </script>
+</body>
+</html>

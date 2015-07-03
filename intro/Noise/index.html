@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Noise Walker</title>
+    <style type="text/css">
+        html,body{
+            height: 100%;
+        }
+        body{
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="1366" height="651"></canvas>
+    <script type="text/javascript" src="js/processing.min.js"></script>
+    <script type="text/javascript">
+        // Simple way to attach js code to the canvas is by using a function
+        function sketchProc(processing) {
+            var prc = processing;
+            var increment = 0.01;
+            // The noise function's 3rd argument, a global variable that increments once per cycle
+            var zoff = 0.0;  
+            // We will increment zoff differently than xoff and yoff
+            var zincrement = 0.02; 
+
+            prc.setup = function() {
+                prc.size(200,200);
+            }
+
+            prc.draw = function() {
+                prc.background(0);
+
+                // Optional: adjust noise detail here
+                // noiseDetail(8,0.65f);
+
+                prc.loadPixels();
+
+                var xoff = 0.0; // Start xoff at 0
+
+                // For every x,y coordinate in a 2D space, calculate a noise value and produce a brightness value
+                for (var x = 0; x < prc.width; x++) {
+                    xoff += increment;   // Increment xoff 
+                    var yoff = 0.0;   // For every xoff, start yoff at 0
+                    for (var y = 0; y < prc.height; y++) {
+                        yoff += increment; // Increment yoff
+
+                        // Calculate noise and scale by 255
+                        var bright = prc.noise(xoff,yoff,zoff)*255;
+                        // Try using this line instead
+                        //var bright = random(0,255);
+
+                        // Set each pixel onscreen to a grayscale value
+                        prc.pixels[x+y*prc.width] = prc.color(bright,bright,bright);
+                    }
+                }
+                prc.updatePixels();
+
+                zoff += zincrement; // Increment zoff
+            };
+        }
+
+        var canvas = document.getElementById("canvas");
+        // attaching the sketchProc function to the canvas
+        var p = new Processing(canvas, sketchProc);
+        // p.exit(); to detach it
+    </script>
+</body>
+</html>

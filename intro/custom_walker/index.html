@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Custom Walker| Custom Distrubution</title>
+    <style type="text/css">
+        html,body{
+            height: 100%;
+        }
+        body{
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script type="text/javascript">
+    window.requestAnimFrame = (function(){
+        return  window.requestAnimationFrame       ||
+                window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame    ||
+                function( callback ){
+                    window.setTimeout(callback, 1000 / 60);
+                };
+    })();
+    ;(function(){
+        'use strict';
+        var canvas = document.getElementById("canvas");
+        canvas.setAttribute('width', window.innerWidth);
+        canvas.setAttribute('height', window.innerHeight);
+        canvas.addEventListener('click', mouseClicked, false);
+        var ctx = canvas.getContext("2d");
+
+        function noStroke() {
+            ctx.lineWidth = 0;
+        }
+
+        function stroke(w, c) {
+            ctx.lineWidth = w;
+            ctx.strokeStyle = c;
+            ctx.stroke();
+        }
+
+        function fill() {
+            if (arguments.length === 1) {
+                ctx.fillStyle = arguments[0][0] === '#' ? arguments[0] : '#' + arguments[0];
+            } else if (arguments[3]) {
+                ctx.fillStyle = 'rgba(' + arguments[0] + ', ' + arguments[1] + ', ' + arguments[2] + ', ' + arguments[3] + ')';
+            } else {
+                ctx.fillStyle = 'rgb(' + arguments[0] + ', ' + arguments[1] + ', ' + arguments[2] +')';
+            }
+            ctx.fill();
+        }
+ 
+        function circle (x, y, r) {
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, 2 * Math.PI, false);
+        }
+
+        function random () {
+            if (arguments[1]){
+                return Math.random() * (arguments[1] - arguments[0]) + arguments[0]
+            } else {
+                return Math.random() * (arguments[0])
+            }
+        }
+
+        function floor (r) {
+            return Math.floor(r);
+        }
+
+        function color () {
+            return {
+                r : arguments[0],
+                g : arguments[1],
+                b : arguments[2]
+            }
+        }
+
+        var monteCarlo = function() {
+            while (true) {
+                var r1 = random(1);
+                var probability = r1;
+                var r2 = random(1);
+                //r2 has to be less than probability to take less steps
+                if (r2 > probability) {
+                    return r1;
+                }
+            }
+        };
+
+        function mouseClicked (e) {
+            var c = new Walker();
+            c.x = e.pageX;
+            c.y = e.pageY;
+            c.color = color(floor(random(255)), floor(random(255)), floor(random(255)));
+            c.size = floor(random(10));
+            // c.speed = floor(random(10));
+            c.speed = c.size * 2;
+            walkers.push(c);
+        }
+
+        var Walker = function() {
+            this.x = canvas.width/2;
+            this.y = canvas.height/2;
+            this.color = {
+                r : floor(random(255)),
+                b : floor(random(255)),
+                g : floor(random(255)),
+            };
+            this.size = floor(random(10));
+            // this.speed = floor(random(10));
+            this.speed = this.size * 2;
+        };
+
+        Walker.prototype.display = function() {
+            circle(this.x, this.y, this.size);
+            fill(this.color.r, this.color.g, this.color.b, random(0.1, 1));
+        };
+
+        // Randomly move right, left, down, or up
+        Walker.prototype.walk = function() {
+            var stepSize = monteCarlo()*10;
+ 
+            var xStepSize = random(-stepSize, stepSize);
+            var yStepSize = random(-stepSize, stepSize);
+         
+            this.x += xStepSize;
+            this.y += yStepSize;
+        };
+
+        var w = new Walker();
+
+        var walkers = [w];
+
+        var draw = function() {
+            walkers.forEach(function (obj) {
+                obj.walk();
+                obj.display();
+            });
+        };
+        function animate () {
+            requestAnimFrame(animate);
+            draw();
+        }
+        animate();
+    }());
+    </script>
+</body>
+</html>
